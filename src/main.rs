@@ -4,6 +4,7 @@
 use core::ops;
 use cortex_m_rt::entry;
 use defmt::*;
+use embedded_hal::digital::v2::OutputPin;
 use embedded_time::duration::*;
 use embedded_time::rate::Extensions;
 use is31fl3731::devices::CharlieBonnet;
@@ -55,6 +56,10 @@ fn main() -> ! {
 	matrix.setup(&mut delay).expect("Failed to setup display");
 
 	info!("Setup everything");
+	pins.led
+		.into_push_pull_output()
+		.set_high()
+		.expect("Failed to set LED to high");
 
 	let mut rng = Rand32::new(0);
 	loop {
