@@ -1,11 +1,13 @@
 #![no_std]
 #![no_main]
 
+use core::ops;
 use cortex_m_rt::entry;
 use defmt::*;
 use embedded_time::duration::*;
 use embedded_time::rate::Extensions;
 use is31fl3731::devices::CharlieBonnet;
+use oorandom::Rand32;
 use rp_pico::hal;
 use rp_pico::hal::pac;
 use rp_pico::hal::prelude::*;
@@ -49,14 +51,26 @@ fn main() -> ! {
 	);
 
 	let mut delay = cortex_m::delay::Delay::new(core.SYST, clocks.system_clock.freq().integer());
-	let mut matrix = CharlieBonnet::configure(i2c, &mut delay);
-	matrix.setup().expect("Failed to setup display");
+	let mut matrix = CharlieBonnet::configure(i2c);
+	matrix.setup(&mut delay).expect("Failed to setup display");
 
 	info!("Setup everything");
 
-	matrix
-		.fill(1, None, 0)
-		.expect("Failed to fill matrix with display brightness of 1");
-
-	loop {}
+	let mut rng = Rand32::new(0);
+	loop {
+		let x: u8 = rng
+			.rand_range(ops::Range { start: 0, end: 16 })
+			.try_into()
+			.unwrap();
+		let y: u8 = rng
+			.rand_range(ops::Range { start: 0, end: 8 })
+			.try_into()
+			.unwrap();
+		info!("Setting LED at ({}, {})", x, y);
+		matrix.pixel(x, y, 5).expect("Failed to set pixel light on");
+		delay.delay_ms(30);
+		matrix
+			.pixel(x, y, 0)
+			.expect("Failed to set pixel light off");
+	}
 }
