@@ -73,7 +73,6 @@ fn main() -> ! {
 			.unwrap();
 		info!("Setting LED at ({}, {})", x, y);
 		matrix.pixel(x, y, 5).expect("Failed to set pixel light on");
-		delay.delay_ms(30);
 		matrix
 			.pixel(x, y, 0)
 			.expect("Failed to set pixel light off");
